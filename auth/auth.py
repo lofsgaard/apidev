@@ -4,30 +4,21 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
+from sqlmodel import select
 from jose import JWTError, jwt
-from .models import User, UserInDB, TokenData
+from .models import UsersBase, Users, TokenData
+from db.database import get_session, async_session
 from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, status
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 load_dotenv(find_dotenv())
 
 
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
-ALGORITHM = os.environ.get('ALGORITHM')
+SECRET_KEY = str(os.environ.get('SECRET_KEY'))
+ALGORITHM = str(os.environ.get('ALGORITHM'))
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES'))
-
-
-
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-        "disabled": False,
-    }
-}
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -35,30 +26,34 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 
-def verify_password(plain_password, hashed_password):
+async def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def get_password_hash(password):
+async def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+
+async def get_user(username: str):
+    async with async_session() as session:
+        user = await session.execute(select(Users).where(Users.username == username))
+        user = user.scalars().all()
+        if user:
+            return user[0]
 
 
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+
+async def authenticate_user(username: str, password: str):
+    user = await get_user(username)
     if not user:
         return False
-    if not verify_password(password, user.hashed_password):
+    if not await verify_password(password, user[0].hashed_password):
         return False
     return user
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+async def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -76,22 +71,20 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = await get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
 
-async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)]
-):
-    if current_user.disabled:
+async def get_current_active_user(current_user: Annotated[Users, Depends(get_current_user)]):
+    if current_user is None:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
