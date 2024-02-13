@@ -6,7 +6,7 @@ from datetime import datetime
 
 class UsersBase(SQLModel):
     username: str
-    hashed_password: str
+    
 
 
 class Users(UsersBase, table=True):
@@ -14,6 +14,7 @@ class Users(UsersBase, table=True):
     id: Optional[int] = Field(primary_key=True, nullable=False)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     disabled: bool | None = True
+    hashed_password: str
 
 
 class UsersCreate(UsersBase):

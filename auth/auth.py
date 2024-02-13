@@ -1,6 +1,7 @@
 from dotenv import load_dotenv, find_dotenv
 import os
 from passlib.context import CryptContext
+from passlib.hash import bcrypt
 from fastapi import Depends, HTTPException, status
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
@@ -30,9 +31,8 @@ async def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-async def get_password_hash(password):
+async def get_password_hash(password: str):
     return pwd_context.hash(password)
-
 
 
 async def get_user(username: str):
@@ -40,8 +40,7 @@ async def get_user(username: str):
         user = await session.execute(select(Users).where(Users.username == username))
         user = user.scalars().all()
         if user:
-            return user[0]
-
+            return user
 
 
 async def authenticate_user(username: str, password: str):
@@ -81,10 +80,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     user = await get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
-    return user
+    return user[0]
 
 
 async def get_current_active_user(current_user: Annotated[Users, Depends(get_current_user)]):
-    if current_user is None:
+    if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
