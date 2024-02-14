@@ -10,7 +10,7 @@ from sqlmodel import SQLModel
 
 from alembic import context
 
-from auth.models import Users
+from app.auth.models import Users
 
 load_dotenv(find_dotenv())
 
