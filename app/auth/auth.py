@@ -1,6 +1,6 @@
 from dotenv import load_dotenv, find_dotenv
 import os
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
@@ -20,17 +20,20 @@ ALGORITHM = str(os.environ.get('ALGORITHM'))
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 
 async def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    # Verify if the input password matches the hashed password
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 async def get_password_hash(password: str):
-    return pwd_context.hash(password)
+    # Generate a salt and hash the password
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password
 
 
 async def get_user(username: str):

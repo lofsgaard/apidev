@@ -40,7 +40,7 @@ async def read_users_me(current_user: Annotated[Users, Depends(get_current_activ
 @router.post("/users/create")
 async def create_user(name: str, password: str, current_user = Depends(get_current_active_user), session: AsyncSession = Depends(get_session)) -> UsersBase:
     hashed_password = await get_password_hash(password)
-    user = Users(username=name, hashed_password=hashed_password)
+    user = Users(username=name, hashed_password=hashed_password.decode('utf-8'))
     if await get_user(name) is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
