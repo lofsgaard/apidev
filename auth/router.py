@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from .auth import authenticate_user, create_access_token, get_current_active_user, get_password_hash
+from .auth import authenticate_user, create_access_token, get_current_active_user, get_password_hash, get_user
 from .models import Token, Users, UsersBase
 from db.database import get_session
 
@@ -38,9 +38,21 @@ async def read_users_me(current_user: Annotated[Users, Depends(get_current_activ
 
 
 @router.post("/users/create")
-async def create_user(username: str, password: str, session: AsyncSession = Depends(get_session), logged_in = Depends(get_current_active_user)) -> UsersBase:
+async def create_user(name: str, password: str, current_user = Depends(get_current_active_user), session: AsyncSession = Depends(get_session)) -> UsersBase:
     hashed_password = await get_password_hash(password)
-    user = Users(username=username, hashed_password=hashed_password)
+    user = Users(username=name, hashed_password=hashed_password)
+    if await get_user(name) is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already exists",
+        )
+    elif current_user.is_superuser is False:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You do not have permission to create a user",
+        )
     session.add(user)
     await session.commit()
+    await session.refresh(user)
     return user
+

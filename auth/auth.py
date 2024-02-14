@@ -1,17 +1,15 @@
 from dotenv import load_dotenv, find_dotenv
 import os
 from passlib.context import CryptContext
-from passlib.hash import bcrypt
 from fastapi import Depends, HTTPException, status
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import select
 from jose import JWTError, jwt
-from .models import UsersBase, Users, TokenData
-from db.database import get_session, async_session
+from .models import Users, TokenData
+from db.database import async_session
 from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, status
-from sqlmodel.ext.asyncio.session import AsyncSession
 
 load_dotenv(find_dotenv())
 

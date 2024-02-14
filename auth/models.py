@@ -15,6 +15,7 @@ class Users(UsersBase, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     disabled: bool | None = True
     hashed_password: str
+    is_superuser: bool | None = False
 
 
 class UsersCreate(UsersBase):
