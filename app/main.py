@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends
 from typing import Annotated
-from auth import router
-from auth.models import Users
-from auth.auth import get_current_active_user
+from app.auth import router
+from app.auth.models import Users
+from app.auth.auth import get_current_active_user
 
 app = FastAPI()
 

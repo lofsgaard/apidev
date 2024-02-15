@@ -10,7 +10,7 @@ from jose import JWTError, jwt
 from sqlmodel import select
 
 from db.database import manual_session
-from .models import Users, TokenData
+from app.auth.models import Users, TokenData
 
 load_dotenv(find_dotenv())
 

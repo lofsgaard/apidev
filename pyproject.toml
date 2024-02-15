@@ -8,7 +8,7 @@ packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "3.11.7"
-fastapi = "^0.109.2"
+fastapi = "0.109.2"
 uvicorn = {extras = ["standard"], version = "^0.27.1"}
 python-multipart = "^0.0.9"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
@@ -20,6 +20,7 @@ httpx = "^0.26.0"
 pytest = "^8.0.0"
 bcrypt = "^4.1.2"
 requests = "^2.31.0"
+pytest-asyncio = "^0.23.5"
 
 
 [build-system]
@@ -30,3 +31,4 @@ build-backend = "poetry.core.masonry.api"
 pythonpath = [
   ".", "app",
 ]
+asyncio_mode = "auto"
