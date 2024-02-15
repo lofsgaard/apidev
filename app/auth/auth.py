@@ -1,18 +1,18 @@
-from dotenv import load_dotenv, find_dotenv
 import os
-import bcrypt
-from fastapi import Depends, HTTPException, status
-from typing import Annotated
-from fastapi.security import OAuth2PasswordBearer
-from sqlmodel import select
-from jose import JWTError, jwt
-from .models import Users, TokenData
-from db.database import async_session
 from datetime import datetime, timedelta, timezone
+from typing import Annotated
+
+import bcrypt
+from dotenv import load_dotenv, find_dotenv
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from sqlmodel import select
+
+from db.database import manual_session
+from .models import Users, TokenData
 
 load_dotenv(find_dotenv())
-
 
 
 SECRET_KEY = str(os.environ.get('SECRET_KEY'))
@@ -21,7 +21,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 
 
 async def verify_password(plain_password: str, hashed_password: str):
@@ -37,7 +36,7 @@ async def get_password_hash(password: str):
 
 
 async def get_user(username: str):
-    async with async_session() as session:
+    async with manual_session() as session:
         user = await session.execute(select(Users).where(Users.username == username))
         user = user.scalars().all()
         if user:

@@ -6,7 +6,6 @@ from datetime import datetime
 
 class UsersBase(SQLModel):
     username: str
-    
 
 
 class Users(UsersBase, table=True):
@@ -29,4 +28,3 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str
-

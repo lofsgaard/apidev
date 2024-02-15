@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "FastAPI project to learn"
 authors = ["Andreas Løfsgaard <andreas@lofsgaard.com>"]
 readme = "README.md"
+packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "3.11.7"
