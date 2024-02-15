@@ -6,8 +6,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from .auth import authenticate_user, create_access_token, get_current_active_user, get_password_hash, get_user
-from .models import Token, Users, UsersBase
+from app.auth.auth import authenticate_user, create_access_token, get_current_active_user, get_password_hash, get_user
+from app.auth.models import Token, Users, UsersBase
 from db.database import get_session
 
 
@@ -31,7 +31,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.get("/users/me/", response_model=Users)
+@router.get("/users/me", response_model=Users)
 async def read_users_me(current_user: Annotated[Users, Depends(get_current_active_user)]):
     print(current_user)
     return current_user
