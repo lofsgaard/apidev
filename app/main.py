@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Depends
 from typing import Annotated
-from app.auth import router
+from app.auth.router import router as auth_router
 from app.auth.models import Users
 from app.auth.auth import get_current_active_user
 
 app = FastAPI()
 
-app.include_router(router.router, tags=["auth"])
+app.include_router(auth_router, tags=["auth"])
 
 
 @app.get("/")

@@ -8,7 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.auth.auth import authenticate_user, create_access_token, get_current_active_user, get_password_hash, get_user
 from app.auth.models import Token, Users, UsersBase
-from db.database import get_session
+from app.db.database import get_session
 
 
 load_dotenv(find_dotenv())
@@ -25,7 +25,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},)
+            headers={"WWW-Authenticate": "Bearer"})
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = await create_access_token(data={"sub": user[0].username}, expires_delta=access_token_expires)
     return Token(access_token=access_token, token_type="bearer")

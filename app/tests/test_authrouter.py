@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from dotenv import load_dotenv, find_dotenv
 import os
+import pytest
 
 load_dotenv(find_dotenv())
 username = str(os.environ.get('username'))
@@ -14,3 +15,4 @@ client = TestClient(app)
 def test_token_withlogin():
     response = client.post("/token", data={"username": username, "password": password})
     assert response.status_code == 200
+    assert response.json()["access_token"] is not None
