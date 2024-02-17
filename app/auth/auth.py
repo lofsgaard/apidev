@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlmodel import select
 
-from db.database import manual_session
+from app.db.database import manual_session
 from app.auth.models import Users, TokenData
 
 load_dotenv(find_dotenv())
